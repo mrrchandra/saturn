@@ -1,13 +1,21 @@
 @import "tailwindcss";
+@import "./terminal-theme.css";
 
 @theme {
-  --color-neon-green: #22C55E; /* Muted System Green (Tailwind Green-500 equivalent) */
-  --color-dark-bg: #121212; /* Matte Black */
-  --color-dark-panel: #1E1E1E; /* Matte Charcoal */
-  --color-dark-border: #333333; /* Soft border */
-  --color-muted-text: #A1A1AA; /* Zinc-400 */
-  --color-coral-red: #EF4444; /* System Error Red */
-  --color-system-blue: #3B82F6; /* Tech Blue */
+  --color-neon-green: #22C55E;
+  /* Muted System Green (Tailwind Green-500 equivalent) */
+  --color-dark-bg: #121212;
+  /* Matte Black */
+  --color-dark-panel: #1E1E1E;
+  /* Matte Charcoal */
+  --color-dark-border: #333333;
+  /* Soft border */
+  --color-muted-text: #A1A1AA;
+  /* Zinc-400 */
+  --color-coral-red: #EF4444;
+  /* System Error Red */
+  --color-system-blue: #3B82F6;
+  /* Tech Blue */
 }
 
 :root {
@@ -21,7 +29,8 @@ html,
 body,
 #root {
   background-color: var(--color-dark-bg);
-  color: #E4E4E7; /* Zinc-200 */
+  color: #E4E4E7;
+  /* Zinc-200 */
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -30,7 +39,8 @@ body,
 
 body {
   font-family: "Inter", system-ui, sans-serif;
-  letter-spacing: -0.01em; /* Tighter, more modern */
+  letter-spacing: -0.01em;
+  /* Tighter, more modern */
 }
 
 /* Global Tech Utilities */

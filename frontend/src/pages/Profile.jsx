@@ -74,7 +74,7 @@ const Profile = () => {
                     />
 
                     <div className="mt-4 w-full">
-                        <div className="text-lg font-bold text-white font-mono">{user.email.split('@')[0]}</div>
+                        <div className="text-lg font-bold text-white font-mono">{user.username || user.email.split('@')[0]}</div>
                         <div className="inline-flex items-center px-2 py-0.5 mt-2 text-[10px] font-mono text-neon-green bg-neon-green/10 border border-neon-green/20 rounded">
                             ROLE::{user.role.toUpperCase()}
                         </div>

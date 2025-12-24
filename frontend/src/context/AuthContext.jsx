@@ -40,10 +40,11 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const register = async (name, email, password) => {
+    const register = async (name, email, password, username) => {
         try {
             const res = await axios.post('http://localhost:5000/api/auth/register', {
                 email,
+                username,
                 password,
                 site_name: 'Saturn Dashboard',
                 role: 'admin' // Self-registering as admin for this dashboard
@@ -68,8 +69,30 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(userData));
     };
 
+    const forgotPassword = async (email) => {
+        try {
+            const res = await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
+            return { success: true, data: res.data.data };
+        } catch (err) {
+            return { success: false, error: err.response?.data?.message || 'Failed to send reset email' };
+        }
+    };
+
+    const resetPassword = async (email, otp, newPassword) => {
+        try {
+            const res = await axios.post('http://localhost:5000/api/auth/reset-password', {
+                email,
+                otp,
+                newPassword
+            });
+            return { success: true, data: res.data.data };
+        } catch (err) {
+            return { success: false, error: err.response?.data?.message || 'Failed to reset password' };
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, updateUser, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, updateUser, forgotPassword, resetPassword, loading }}>
             {children}
         </AuthContext.Provider>
     );

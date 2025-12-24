@@ -5,15 +5,17 @@ const axios = require('axios');
 const FormData = require('form-data');
 const asyncHandler = require('../utils/asyncHandler');
 const { success, error } = require('../utils/response');
+const { createOTP, verifyOTP } = require('../utils/otpService');
+const { sendOTPEmail } = require('../services/emailService');
 
 /**
  * Register a new user
  */
 exports.register = asyncHandler(async (req, res) => {
-    const { email, password, site_name, role } = req.body;
+    const { email, username, password, site_name, role } = req.body;
 
     // Check if user exists
-    const existing = await db.query('SELECT id FROM Users WHERE email = $1', [email]);
+    const existing = await db.query('SELECT id FROM Users WHERE email = $1 OR username = $2', [email, username || null]);
     if (existing.rowCount > 0) {
         return error(res, 'User already exists', 'Account already registered', 400);
     }
@@ -22,8 +24,8 @@ exports.register = asyncHandler(async (req, res) => {
     const site = req.project ? req.project.name : (site_name || 'Saturn Platform');
 
     const result = await db.query(
-        'INSERT INTO Users (email, password_hash, site_name, role) VALUES ($1, $2, $3, $4) RETURNING id, email, role',
-        [email, password_hash, site, role || 'user']
+        'INSERT INTO Users (email, username, password_hash, site_name, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, username, role',
+        [email, username || null, password_hash, site, role || 'user']
     );
 
     // Log analytics event
@@ -72,7 +74,7 @@ exports.login = asyncHandler(async (req, res) => {
     return success(res, {
         token,
         refreshToken,
-        user: { id: user.id, email: user.email, role: user.role }
+        user: { id: user.id, email: user.email, username: user.username, role: user.role }
     }, 'Login successful');
 });
 
@@ -168,4 +170,101 @@ exports.uploadPFP = asyncHandler(async (req, res) => {
         console.error('ImgLink Error:', err.response?.data || err.message);
         return error(res, err.response?.data || 'ImgLink upload failed', 'Failed to upload image to ImgLink', 500);
     }
+});
+/**
+ * Send OTP for email verification
+ */
+exports.sendOTP = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return error(res, 'Email required', 'Email address is required', 400);
+    }
+
+    // Create OTP
+    const otpResult = await createOTP(email, 'email_verification');
+    if (!otpResult.success) {
+        return error(res, otpResult.error, 'Failed to generate OTP', 500);
+    }
+
+    // Send OTP via email
+    const emailResult = await sendOTPEmail(email, otpResult.otp);
+    if (!emailResult.success) {
+        return error(res, emailResult.error, 'Failed to send OTP email', 500);
+    }
+
+    return success(res, { email }, 'OTP sent successfully to your email');
+});
+
+/**
+ * Verify OTP
+ */
+exports.verifyOTPCode = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+        return error(res, 'Missing fields', 'Email and OTP are required', 400);
+    }
+
+    const result = await verifyOTP(email, otp, 'email_verification');
+    if (!result.success) {
+        return error(res, result.error, 'OTP verification failed', 400);
+    }
+
+    return success(res, { email, verified: true }, 'Email verified successfully');
+});
+/**
+ * Forgot Password - Send OTP for password reset
+ */
+exports.forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    // Check if user exists
+    const result = await db.query('SELECT id, username FROM Users WHERE email = $1', [email]);
+    if (result.rows.length === 0) {
+        return error(res, 'User not found', 'No account with this email exists', 404);
+    }
+
+    const user = result.rows[0];
+
+    // Create OTP for password reset
+    const otpResult = await createOTP(email, 'password_reset');
+    if (!otpResult.success) {
+        return error(res, otpResult.error, 'Failed to generate OTP', 500);
+    }
+
+    // Send OTP via email
+    const emailResult = await sendOTPEmail(email, otpResult.otp, user.username);
+    if (!emailResult.success) {
+        return error(res, emailResult.error, 'Failed to send reset email', 500);
+    }
+
+    return success(res, { email }, 'Password reset OTP sent to your email');
+});
+
+/**
+ * Reset Password - Verify OTP and update password
+ */
+exports.resetPassword = asyncHandler(async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+
+    // Verify OTP
+    const otpVerification = await verifyOTP(email, otp, 'password_reset');
+    if (!otpVerification.success) {
+        return error(res, otpVerification.error, 'Invalid or expired OTP', 400);
+    }
+
+    // Hash new password
+    const password_hash = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await db.query('UPDATE Users SET password_hash = $1 WHERE email = $2', [password_hash, email]);
+
+    // Log analytics event
+    await db.query(
+        'INSERT INTO Analytics (user_id, event_type, site_name) VALUES ((SELECT id FROM Users WHERE email = $1), $2, $3)',
+        [email, 'auth.password_reset', 'Saturn Platform']
+    );
+
+    return success(res, { email }, 'Password reset successful');
 });

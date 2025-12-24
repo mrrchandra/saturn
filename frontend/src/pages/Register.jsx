@@ -5,6 +5,7 @@ import { Terminal, Command } from 'lucide-react';
 
 const Register = () => {
     const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const { register, login } = useAuth();
@@ -13,7 +14,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        const res = await register(null, email, password);
+        const res = await register(null, email, password, username);
         if (res.success) {
             await login(email, password);
             navigate('/');
@@ -50,6 +51,19 @@ const Register = () => {
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full bg-dark-panel border border-dark-border rounded px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-neon-green transition-all"
                             placeholder="admin@saturn.io"
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-muted-text uppercase tracking-wider block">Username (Optional)</label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="w-full bg-dark-panel border border-dark-border rounded px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-neon-green transition-all"
+                            placeholder="saturn_admin"
+                            pattern="[a-zA-Z0-9_]+"
+                            minLength={3}
+                            maxLength={50}
                         />
                     </div>
                     <div className="space-y-1.5">

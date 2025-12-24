@@ -1,0 +1,227 @@
+/* Terminal Theme CSS Variables and Enhancements */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+    /* Terminal Colors */
+    --terminal-bg: #0a0a0a;
+    --terminal-panel: #1a1a1a;
+    --terminal-border: #2a2a2a;
+    --terminal-green: #00ff00;
+    --terminal-red: #ff0055;
+    --terminal-amber: #ffaa00;
+    --terminal-blue: #00aaff;
+    --terminal-text: #e0e0e0;
+    --terminal-muted: #666666;
+
+    /* Shadows */
+    --glow-green: 0 0 10px rgba(0, 255, 0, 0.3);
+    --glow-red: 0 0 10px rgba(255, 0, 85, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    background-color: var(--terminal-bg);
+    color: var(--terminal-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Terminal Cursor Animation */
+@keyframes blink {
+
+    0%,
+    50% {
+        opacity: 1;
+    }
+
+    51%,
+    100% {
+        opacity: 0;
+    }
+}
+
+.terminal-cursor {
+    display: inline-block;
+    width: 8px;
+    height: 16px;
+    background-color: var(--terminal-green);
+    animation: blink 1s infinite;
+    margin-left: 2px;
+}
+
+/* Scanline Effect */
+@keyframes scanline {
+    0% {
+        transform: translateY(-100%);
+    }
+
+    100% {
+        transform: translateY(100%);
+    }
+}
+
+.scanline-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(transparent, rgba(0, 255, 0, 0.1), transparent);
+    animation: scanline 8s linear infinite;
+    pointer-events: none;
+}
+
+/* Terminal Box */
+.terminal-box {
+    background-color: var(--terminal-panel);
+    border: 1px solid var(--terminal-border);
+    border-radius: 4px;
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.terminal-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        linear-gradient(transparent 50%, rgba(0, 255, 0, 0.02) 50%);
+    background-size: 100% 4px;
+    pointer-events: none;
+}
+
+/* ASCII Border */
+.ascii-border {
+    border: 2px solid var(--terminal-green);
+    position: relative;
+}
+
+.ascii-border::before {
+    content: '┌─────────────────────────────────────┐';
+    position: absolute;
+    top: -12px;
+    left: 0;
+    right: 0;
+    color: var(--terminal-green);
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* Terminal Prompt */
+.terminal-prompt {
+    color: var(--terminal-green);
+    font-weight: 700;
+}
+
+.terminal-prompt::before {
+    content: '$ ';
+}
+
+/* Status Indicators */
+.status-online {
+    color: var(--terminal-green);
+    text-shadow: var(--glow-green);
+}
+
+.status-offline {
+    color: var(--terminal-red);
+    text-shadow: var(--glow-red);
+}
+
+.status-warning {
+    color: var(--terminal-amber);
+}
+
+/* Glitch Effect */
+@keyframes glitch {
+    0% {
+        transform: translate(0);
+    }
+
+    20% {
+        transform: translate(-2px, 2px);
+    }
+
+    40% {
+        transform: translate(-2px, -2px);
+    }
+
+    60% {
+        transform: translate(2px, 2px);
+    }
+
+    80% {
+        transform: translate(2px, -2px);
+    }
+
+    100% {
+        transform: translate(0);
+    }
+}
+
+.glitch-text:hover {
+    animation: glitch 0.3s;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--terminal-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--terminal-green);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #00cc00;
+}
+
+/* Loading Spinner */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.terminal-spinner {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+/* Matrix Rain Effect (Optional) */
+@keyframes matrix-rain {
+    0% {
+        transform: translateY(-100%);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100vh);
+        opacity: 0;
+    }
+}
+
+.matrix-char {
+    position: absolute;
+    color: var(--terminal-green);
+    font-size: 14px;
+    animation: matrix-rain 3s linear infinite;
+}

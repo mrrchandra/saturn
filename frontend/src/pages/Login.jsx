@@ -74,6 +74,9 @@ const Login = () => {
                     <p className="text-[10px] font-mono text-muted-text">
                         New terminal? <Link to="/register" className="text-neon-green hover:underline">Configure Node</Link>
                     </p>
+                    <p className="text-[10px] font-mono text-muted-text mt-2">
+                        Forgot password? <Link to="/forgot-password" className="text-neon-green hover:underline">Reset Access</Link>
+                    </p>
                 </div>
             </div>
         </div>
