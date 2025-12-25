@@ -14,6 +14,10 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem('token');
             const storedUser = localStorage.getItem('user');
 
+            // Set API key for all requests
+            const apiKey = import.meta.env.VITE_API_KEY || 'saturn-dashboard-key-2024';
+            axios.defaults.headers.common['x-api-key'] = apiKey;
+
             if (token && storedUser) {
                 setUser(JSON.parse(storedUser));
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;

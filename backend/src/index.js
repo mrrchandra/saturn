@@ -2,12 +2,16 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const errorHandler = require('./middleware/error');
+const projectContext = require('./middleware/projectContext');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
+// Project Context Middleware (Phase 1 - Control Plane)
+app.use(projectContext);
 
 // Basic Route
 app.get('/', (req, res) => {

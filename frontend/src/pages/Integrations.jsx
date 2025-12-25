@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Zap, Link as LinkIcon, Plus, Code2, Copy, Check, ShieldAlert, X, Trash2, Terminal, Server } from 'lucide-react';
+import ProjectFunctions from '../components/ProjectFunctions';
 
 const Integrations = () => {
     const [projects, setProjects] = useState([]);
@@ -139,6 +140,9 @@ const Integrations = () => {
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Function Management */}
+                            <ProjectFunctions project={proj} />
                         </div>
                     ))}
                 </div>

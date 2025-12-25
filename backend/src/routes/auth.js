@@ -5,6 +5,7 @@ const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const authController = require('../controllers/authController');
 const { error } = require('../utils/response');
+const functionGate = require('../middleware/functionGate');
 
 // Configure Multer (In-memory storage for cloud relay)
 const upload = multer({
@@ -31,6 +32,7 @@ const validate = (req, res, next) => {
 // Routes
 router.post('/register',
     authLimiter,
+    functionGate('auth.register'),
     [
         body('email').isEmail().withMessage('Invalid email address'),
         body('username').optional().isLength({ min: 3, max: 50 }).withMessage('Username must be 3-50 characters').matches(/^[a-zA-Z0-9_]+$/).withMessage('Username can only contain letters, numbers, and underscores'),
@@ -42,6 +44,7 @@ router.post('/register',
 
 router.post('/login',
     authLimiter,
+    functionGate('auth.login'),
     [
         body('email').isEmail().withMessage('Invalid email address'),
         body('password').notEmpty().withMessage('Password is required')
@@ -50,10 +53,11 @@ router.post('/login',
     authController.login
 );
 
-router.post('/refresh', authController.refresh);
-router.post('/logout', authController.logout);
+router.post('/refresh', functionGate('auth.refresh'), authController.refresh);
+router.post('/logout', functionGate('auth.logout'), authController.logout);
 
 router.post('/pfp',
+    functionGate('auth.upload-pfp'),
     upload.single('file'),
     authController.uploadPFP
 );
@@ -62,6 +66,7 @@ router.post('/pfp',
 // OTP routes
 router.post('/send-otp',
     authLimiter,
+    functionGate('otp.send'),
     [
         body('email').isEmail().withMessage('Invalid email address')
     ],
@@ -72,6 +77,7 @@ router.post('/send-otp',
 
 router.post('/verify-otp',
     authLimiter,
+    functionGate('otp.verify'),
     [
         body('email').isEmail().withMessage('Invalid email address'),
         body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits')
@@ -83,6 +89,7 @@ router.post('/verify-otp',
 // Password reset routes
 router.post('/forgot-password',
     authLimiter,
+    functionGate('auth.forgot-password'),
     [
         body('email').isEmail().withMessage('Invalid email address')
     ],
@@ -92,6 +99,7 @@ router.post('/forgot-password',
 
 router.post('/reset-password',
     authLimiter,
+    functionGate('auth.reset-password'),
     [
         body('email').isEmail().withMessage('Invalid email address'),
         body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),

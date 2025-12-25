@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const adminController = require('../controllers/adminController');
+const functionController = require('../controllers/functionController');
 
 const { verifyToken, isAdmin } = require('../middleware/auth');
 
@@ -18,5 +19,9 @@ router.get('/users', adminLimiter, verifyToken, isAdmin, adminController.listUse
 router.patch('/site-settings', adminLimiter, verifyToken, isAdmin, adminController.updateSiteSettings);
 router.get('/site-settings', adminLimiter, verifyToken, isAdmin, adminController.getSiteSettings);
 
+// Function management routes
+router.get('/functions', adminLimiter, verifyToken, isAdmin, functionController.getAllFunctions);
+router.get('/projects/:projectId/functions', adminLimiter, verifyToken, isAdmin, functionController.getProjectFunctions);
+router.patch('/projects/:projectId/functions/:functionId', adminLimiter, verifyToken, isAdmin, functionController.toggleProjectFunction);
 
 module.exports = router;
