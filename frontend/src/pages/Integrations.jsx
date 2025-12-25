@@ -14,9 +14,15 @@ const Integrations = () => {
         try {
             const res = await axios.get('http://localhost:5000/api/integrations');
             // FIX: Access res.data.data
-            setProjects(res.data.data);
+            setProjects(res.data.data || []);
         } catch (error) {
             console.error("Error fetching projects:", error);
+            console.error("Error details:", {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status
+            });
+            setProjects([]); // Set empty array on error
         } finally {
             setLoading(false);
         }
