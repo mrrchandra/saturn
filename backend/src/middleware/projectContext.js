@@ -23,7 +23,7 @@ const projectContext = async (req, res, next) => {
 
         // Load project from database
         const projectResult = await db.query(
-            'SELECT id, name, is_maintenance, feature_flags, config FROM Projects WHERE api_key = $1',
+            'SELECT id, name, is_maintenance, is_saturn_platform, feature_flags, config FROM Projects WHERE api_key = $1',
             [apiKey]
         );
 
@@ -71,7 +71,10 @@ const projectContext = async (req, res, next) => {
             name: project.name,
             featureFlags: project.feature_flags || {},
             enabledFunctions,
-            config: project.config || {}
+            config: {
+                ...(project.config || {}),
+                is_saturn_platform: project.is_saturn_platform || false
+            }
         };
 
         next();

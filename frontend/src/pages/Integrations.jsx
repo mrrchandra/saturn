@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Zap, Link as LinkIcon, Plus, Code2, Copy, Check, ShieldAlert, X, Trash2, Terminal, Server } from 'lucide-react';
-import ProjectFunctions from '../components/ProjectFunctions';
+import { Zap, Link as LinkIcon, Plus, Code2, Copy, Check, ShieldAlert, X, Trash2, Terminal, Server, Settings } from 'lucide-react';
+import FunctionRegistryModal from '../components/FunctionRegistryModal';
 
 const Integrations = () => {
     const [projects, setProjects] = useState([]);
@@ -9,6 +9,8 @@ const Integrations = () => {
     const [showModal, setShowModal] = useState(false);
     const [newProjectName, setNewProjectName] = useState('');
     const [copiedId, setCopiedId] = useState(null);
+    const [selectedProject, setSelectedProject] = useState(null);
+    const [showFunctionModal, setShowFunctionModal] = useState(false);
 
     const fetchProjects = async () => {
         try {
@@ -139,6 +141,16 @@ const Integrations = () => {
                                         {proj.is_maintenance ? "Disable" : "Maintenance"}
                                     </button>
                                     <button
+                                        onClick={() => {
+                                            setSelectedProject(proj);
+                                            setShowFunctionModal(true);
+                                        }}
+                                        className="px-3 py-1.5 bg-transparent border border-dark-border rounded text-[10px] font-bold uppercase text-muted-text hover:border-neon-green hover:text-neon-green transition-all flex items-center gap-1"
+                                    >
+                                        <Settings className="w-3 h-3" />
+                                        Functions
+                                    </button>
+                                    <button
                                         onClick={() => deleteProject(proj.id)}
                                         className="p-1.5 bg-transparent rounded border border-transparent text-muted-text hover:text-coral-red hover:border-coral-red/30 transition-all"
                                     >
@@ -146,9 +158,6 @@ const Integrations = () => {
                                     </button>
                                 </div>
                             </div>
-
-                            {/* Function Management */}
-                            <ProjectFunctions project={proj} />
                         </div>
                     ))}
                 </div>
@@ -234,6 +243,13 @@ const Integrations = () => {
                     </div>
                 </div>
             )}
+
+            {/* Function Registry Modal */}
+            <FunctionRegistryModal
+                project={selectedProject}
+                isOpen={showFunctionModal}
+                onClose={() => setShowFunctionModal(false)}
+            />
         </div>
     );
 };
