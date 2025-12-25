@@ -23,5 +23,6 @@ router.get('/site-settings', adminLimiter, verifyToken, isAdmin, adminController
 router.get('/functions', adminLimiter, verifyToken, isAdmin, functionController.getAllFunctions);
 router.get('/projects/:projectId/functions', adminLimiter, verifyToken, isAdmin, functionController.getProjectFunctions);
 router.patch('/projects/:projectId/functions/:functionId', adminLimiter, verifyToken, isAdmin, functionController.toggleProjectFunction);
+router.put('/projects/:projectId/origins', adminLimiter, verifyToken, isAdmin, saturnOnly, functionController.updateProjectOrigins);
 
 module.exports = router;

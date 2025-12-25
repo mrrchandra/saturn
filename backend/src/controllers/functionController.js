@@ -56,6 +56,37 @@ exports.toggleProjectFunction = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Update allowed origins for a project
+ */
+exports.updateProjectOrigins = asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
+    const { origins } = req.body;
+
+    // Validate origins
+    if (!Array.isArray(origins)) {
+        return error(res, 'Validation error', 'Origins must be an array', 400);
+    }
+
+    // Update config
+    const result = await db.query(`
+        UPDATE Projects 
+        SET config = jsonb_set(
+            COALESCE(config, '{}'),
+            '{allowed_origins}',
+            $1::jsonb
+        )
+        WHERE id = $2
+        RETURNING id, name, config
+    `, [JSON.stringify(origins), projectId]);
+
+    if (result.rows.length === 0) {
+        return error(res, 'Not found', 'Project not found', 404);
+    }
+
+    return success(res, result.rows[0], 'Origins updated');
+});
+
+/**
  * Get all functions in registry
  */
 exports.getAllFunctions = asyncHandler(async (req, res) => {
