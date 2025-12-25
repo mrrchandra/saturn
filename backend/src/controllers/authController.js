@@ -55,13 +55,24 @@ exports.login = asyncHandler(async (req, res) => {
     }
 
     // Generate Tokens
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    const refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1d' });
+    const accessToken = jwt.sign(
+        { userId: user.id, email: user.email, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '15m' }
+    );
+    const refreshToken = jwt.sign(
+        { userId: user.id, email: user.email, role: user.role },
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: '7d' }
+    );
 
-    // Store Refresh Token in DB
+    // Hash refresh token before storing
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    // Store hashed refresh token in Users table
     await db.query(
-        'INSERT INTO AuthTokens (user_id, token, type, expires_at) VALUES ($1, $2, $3, NOW() + $4::interval)',
-        [user.id, refreshToken, 'refresh', '1 day']
+        'UPDATE Users SET refresh_token = $1 WHERE id = $2',
+        [hashedRefreshToken, user.id]
     );
 
     // Log analytics event
@@ -71,9 +82,22 @@ exports.login = asyncHandler(async (req, res) => {
         [user.id, 'auth.login', site]
     );
 
+    // Set httpOnly cookies
+    res
+        .cookie('saturn_access', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 15 * 60 * 1000 // 15 minutes
+        })
+        .cookie('saturn_refresh', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
     return success(res, {
-        token,
-        refreshToken,
         user: { id: user.id, email: user.email, username: user.username, role: user.role }
     }, 'Login successful');
 });
@@ -103,13 +127,28 @@ exports.refresh = asyncHandler(async (req, res) => {
 });
 
 /**
- * Logout and revoke token
+ * Logout user
  */
 exports.logout = asyncHandler(async (req, res) => {
-    const { refreshToken } = req.body;
-    if (refreshToken) {
-        await db.query('DELETE FROM AuthTokens WHERE token = $1', [refreshToken]);
+    const userId = req.user?.id;
+
+    if (userId) {
+        // Clear refresh token from DB
+        await db.query('UPDATE Users SET refresh_token = NULL WHERE id = $1', [userId]);
+
+        // Log analytics event
+        const site = req.project ? req.project.name : 'Saturn Platform';
+        await db.query(
+            'INSERT INTO Analytics (user_id, event_type, site_name) VALUES ($1, $2, $3)',
+            [userId, 'auth.logout', site]
+        );
     }
+
+    // Clear cookies
+    res
+        .clearCookie('saturn_access')
+        .clearCookie('saturn_refresh');
+
     return success(res, null, 'Logged out successfully');
 });
 

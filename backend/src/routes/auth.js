@@ -4,6 +4,8 @@ const multer = require('multer');
 const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const authController = require('../controllers/authController');
+const sessionController = require('../controllers/sessionController');
+const { verifyToken } = require('../middleware/auth');
 const { error } = require('../utils/response');
 const functionGate = require('../middleware/functionGate');
 
@@ -53,8 +55,11 @@ router.post('/login',
     authController.login
 );
 
+// Session check
+router.get('/session', sessionController.session);
+
 router.post('/refresh', functionGate('auth.refresh'), authController.refresh);
-router.post('/logout', functionGate('auth.logout'), authController.logout);
+router.post('/logout', verifyToken, functionGate('auth.logout'), authController.logout);
 
 router.post('/pfp',
     functionGate('auth.upload-pfp'),

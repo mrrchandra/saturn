@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const errorHandler = require('./middleware/error');
 const projectContext = require('./middleware/projectContext');
@@ -10,8 +11,13 @@ const PORT = process.env.PORT || 5000;
 // Trust proxy - required for rate limiting behind proxies
 app.set('trust proxy', 1);
 
-app.use(cors());
+// CORS - allow credentials from frontend
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 // Project Context Middleware (Phase 1 - Control Plane)
 app.use(projectContext);

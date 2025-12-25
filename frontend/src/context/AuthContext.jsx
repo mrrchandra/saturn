@@ -11,36 +11,45 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const initAuth = async () => {
-            const token = localStorage.getItem('token');
-            const storedUser = localStorage.getItem('user');
-
             // Set API key for all requests
             const apiKey = import.meta.env.VITE_API_KEY || 'saturn-dashboard-key-2024';
             axios.defaults.headers.common['x-api-key'] = apiKey;
 
-            if (token && storedUser) {
-                setUser(JSON.parse(storedUser));
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            }
-            setLoading(false);
+            // Enable sending cookies with requests
+            axios.defaults.withCredentials = true;
+
+            // Check if user has a valid session
+            await checkSession();
         };
         initAuth();
     }, []);
 
+    const checkSession = async () => {
+        try {
+            const res = await axios.get('http://localhost:5000/api/auth/session');
+            if (res.data.authenticated) {
+                setUser(res.data.data.user);
+            }
+        } catch (error) {
+            // No valid session
+            setUser(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const login = async (email, password) => {
         try {
             const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-            const { token, refreshToken, user } = res.data.data;
+            const { user } = res.data.data;
 
-            localStorage.setItem('token', token);
-            localStorage.setItem('refreshToken', refreshToken);
-            localStorage.setItem('user', JSON.stringify(user));
-
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             setUser(user);
             return { success: true };
         } catch (err) {
-            return { success: false, error: err.response?.data?.message || 'Login failed' };
+            return {
+                success: false,
+                error: err.response?.data?.message || 'Login failed'
+            };
         }
     };
 
@@ -60,12 +69,15 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        delete axios.defaults.headers.common['Authorization'];
-        setUser(null);
+    const logout = async () => {
+        try {
+            await axios.post('http://localhost:5000/api/auth/logout');
+            setUser(null);
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Clear user anyway
+            setUser(null);
+        }
     };
 
     const updateUser = (userData) => {
