@@ -26,13 +26,28 @@ function ProjectFunctions({ project }) {
 
     const toggleFunction = async (functionId, currentStatus) => {
         try {
-            await axios.patch(
+            console.log(`Toggling function ${functionId} for project ${project.id}:`, {
+                current: currentStatus,
+                new: !currentStatus
+            });
+
+            const res = await axios.patch(
                 `http://localhost:5000/api/admin/projects/${project.id}/functions/${functionId}`,
                 { is_enabled: !currentStatus }
             );
-            fetchFunctions(); // Refresh
+
+            console.log('Toggle response:', res.data);
+
+            // Refresh the function list to show updated state
+            await fetchFunctions();
         } catch (error) {
             console.error('Error toggling function:', error);
+            console.error('Error details:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status
+            });
+            alert(`Failed to toggle function: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -75,8 +90,8 @@ function ProjectFunctions({ project }) {
                                             <button
                                                 onClick={() => toggleFunction(func.id, func.is_enabled)}
                                                 className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold uppercase transition-all ${func.is_enabled
-                                                        ? 'bg-neon-green/10 text-neon-green border border-neon-green/30'
-                                                        : 'bg-coral-red/10 text-coral-red border border-coral-red/30'
+                                                    ? 'bg-neon-green/10 text-neon-green border border-neon-green/30'
+                                                    : 'bg-coral-red/10 text-coral-red border border-coral-red/30'
                                                     }`}
                                             >
                                                 {func.is_enabled ? (

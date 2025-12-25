@@ -15,6 +15,12 @@ const functionGate = (functionName) => {
         // Check if function is enabled for this project
         const functionConfig = req.project.enabledFunctions[functionName];
 
+        console.log(`[FunctionGate] Checking ${functionName} for project ${req.project.name}:`, {
+            found: !!functionConfig,
+            enabled: functionConfig?.enabled,
+            functionConfig
+        });
+
         if (!functionConfig) {
             // Function not in registry - deny
             return res.status(404).json({

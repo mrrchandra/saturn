@@ -36,6 +36,8 @@ const projectContext = async (req, res, next) => {
 
         const project = projectResult.rows[0];
 
+        console.log(`[ProjectContext] Loaded project: ${project.name} (ID: ${project.id})`);
+
         // Check maintenance mode (except for admin routes)
         if (project.is_maintenance && !req.path.startsWith('/api/admin')) {
             return res.status(503).json({

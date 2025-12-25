@@ -1,32 +1,27 @@
 const db = require('../src/config/db');
 
-async function fixMaintenanceMode() {
+async function checkAndFixMaintenance() {
     try {
-        console.log('🔧 Fixing maintenance mode...\n');
+        console.log('🔍 Checking all projects...\n');
 
-        // Turn off maintenance for all projects
         const result = await db.query(`
-            UPDATE Projects 
-            SET is_maintenance = false 
-            WHERE is_maintenance = true
-            RETURNING id, name, is_maintenance
+            SELECT id, name, api_key, is_maintenance 
+            FROM Projects 
+            ORDER BY id
         `);
 
-        if (result.rows.length === 0) {
-            console.log('✅ No projects in maintenance mode');
-        } else {
-            console.log(`✅ Fixed ${result.rows.length} project(s):\n`);
-            result.rows.forEach(project => {
-                console.log(`  - ${project.name} (ID: ${project.id}) - Maintenance: ${project.is_maintenance}`);
-            });
-        }
-
-        // Show all projects status
-        const all = await db.query('SELECT id, name, is_maintenance FROM Projects ORDER BY id');
-        console.log('\n📊 All Projects Status:');
-        all.rows.forEach(p => {
-            console.log(`  ${p.id}. ${p.name} - Maintenance: ${p.is_maintenance ? '🔴 ON' : '✅ OFF'}`);
+        console.log('📊 Current Projects:\n');
+        result.rows.forEach(p => {
+            const status = p.is_maintenance ? '🔴 MAINTENANCE' : '✅ ACTIVE';
+            console.log(`  ${p.id}. ${p.name}`);
+            console.log(`     API Key: ${p.api_key}`);
+            console.log(`     Status: ${status}\n`);
         });
+
+        // Turn off maintenance for ALL projects
+        await db.query('UPDATE Projects SET is_maintenance = false');
+
+        console.log('✅ Turned off maintenance mode for ALL projects!\n');
 
         process.exit(0);
     } catch (error) {
@@ -35,4 +30,4 @@ async function fixMaintenanceMode() {
     }
 }
 
-fixMaintenanceMode();
+checkAndFixMaintenance();
