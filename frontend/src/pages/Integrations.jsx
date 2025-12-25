@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Zap, Link as LinkIcon, Plus, Code2, Copy, Check, ShieldAlert, X, Trash2, Terminal, Server, Settings } from 'lucide-react';
+import { Zap, Link as LinkIcon, Plus, Code2, Copy, Check, ShieldAlert, X, Trash2, Terminal, Server, Settings, Globe, AlertCircle } from 'lucide-react';
 import FunctionRegistryModal from '../components/FunctionRegistryModal';
+import OriginManagementModal from '../components/OriginManagementModal';
 
 const Integrations = () => {
     const [projects, setProjects] = useState([]);
@@ -11,6 +12,7 @@ const Integrations = () => {
     const [copiedId, setCopiedId] = useState(null);
     const [selectedProject, setSelectedProject] = useState(null);
     const [showFunctionModal, setShowFunctionModal] = useState(false);
+    const [showOriginModal, setShowOriginModal] = useState(false);
 
     const fetchProjects = async () => {
         try {
@@ -112,7 +114,15 @@ const Integrations = () => {
                                         <Zap className="w-6 h-6 fill-current" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-white tracking-tight">{proj.name}</h3>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="text-lg font-bold text-white tracking-tight">{proj.name}</h3>
+                                            <span className={`text-[9px] px-1.5 py-0.5 rounded border ${proj.is_maintenance
+                                                ? 'bg-coral-red/10 border-coral-red/30 text-coral-red'
+                                                : 'bg-neon-green/10 border-neon-green/30 text-neon-green'
+                                                } font-mono font-bold uppercase`}>
+                                                {proj.is_maintenance ? 'Offline' : 'Online'}
+                                            </span>
+                                        </div>
                                         <div className="mt-1 flex items-center gap-4">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-[10px] text-muted-text font-mono uppercase">API Key:</span>
@@ -133,12 +143,14 @@ const Integrations = () => {
                                 <div className="flex items-center gap-3">
                                     <button
                                         onClick={() => toggleMaintenance(proj.id, proj.is_maintenance)}
-                                        className={`px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider border transition-all ${proj.is_maintenance
-                                            ? 'bg-transparent border-coral-red text-coral-red hover:bg-coral-red hover:text-white'
-                                            : 'bg-transparent border-dark-border text-muted-text hover:border-neon-green hover:text-neon-green'
+                                        className={`px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5 ${proj.is_maintenance
+                                            ? 'bg-coral-red text-white border-coral-red hover:bg-transparent hover:text-coral-red'
+                                            : 'bg-transparent border-dark-border text-muted-text hover:border-coral-red hover:text-coral-red'
                                             }`}
+                                        title={proj.is_maintenance ? "Disable Maintenance" : "Enable Maintenance"}
                                     >
-                                        {proj.is_maintenance ? "Disable" : "Maintenance"}
+                                        <AlertCircle className="w-3 h-3" />
+                                        {proj.is_maintenance ? "Go Online" : "Go Offline"}
                                     </button>
                                     <button
                                         onClick={() => {
@@ -149,6 +161,16 @@ const Integrations = () => {
                                     >
                                         <Settings className="w-3 h-3" />
                                         Functions
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setSelectedProject(proj);
+                                            setShowOriginModal(true);
+                                        }}
+                                        className="px-3 py-1.5 bg-transparent border border-dark-border rounded text-[10px] font-bold uppercase text-muted-text hover:border-neon-green hover:text-neon-green transition-all flex items-center gap-1"
+                                    >
+                                        <Globe className="w-3 h-3" />
+                                        CORS
                                     </button>
                                     <button
                                         onClick={() => deleteProject(proj.id)}
@@ -249,6 +271,15 @@ const Integrations = () => {
                 project={selectedProject}
                 isOpen={showFunctionModal}
                 onClose={() => setShowFunctionModal(false)}
+            />
+            {/* Origin Management Modal */}
+            <OriginManagementModal
+                project={selectedProject}
+                isOpen={showOriginModal}
+                onClose={() => {
+                    setShowOriginModal(false);
+                    fetchProjects(); // Refresh to get updated origins in proj structure
+                }}
             />
         </div>
     );

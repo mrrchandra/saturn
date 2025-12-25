@@ -15,6 +15,11 @@ const projectContext = async (req, res, next) => {
         }
 
         if (!apiKey) {
+            // Allow OPTIONS requests to pass through for CORS preflight
+            if (req.method === 'OPTIONS') {
+                req.project = null;
+                return next();
+            }
             return res.status(401).json({
                 success: false,
                 message: 'API key required - provide via x-api-key header'

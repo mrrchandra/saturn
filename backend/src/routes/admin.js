@@ -5,6 +5,7 @@ const adminController = require('../controllers/adminController');
 const functionController = require('../controllers/functionController');
 
 const { verifyToken, isAdmin } = require('../middleware/auth');
+const saturnOnly = require('../middleware/saturnOnly');
 
 // Strict rate limiter for admin operations
 const adminLimiter = rateLimit({
