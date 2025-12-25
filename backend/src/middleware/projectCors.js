@@ -25,8 +25,11 @@ const projectCors = async (req, res, next) => {
         console.log(`[ProjectCORS] Context Project: ${req.project.name}, Allowed: ${isAllowed}`);
     }
 
-    // Case 2: Preflight or Missing Project Context (Try to identify by Origin)
-    if (!isAllowed) {
+    // Case 2: Preflight OR Missing Project Context (Fallback lookup)
+    // We only use the global fallback if:
+    // a) It's a preflight OPTIONS request (no headers sent yet)
+    // b) No project was identified yet (req.project is null)
+    if (!isAllowed && (req.method === 'OPTIONS' || !req.project)) {
         try {
             // Check if ANY project whitelists this origin
             // Search anywhere in the Projects table for this origin in config->allowed_origins
@@ -41,7 +44,7 @@ const projectCors = async (req, res, next) => {
                 console.log(`[ProjectCORS] Origin recognized for project(s): ${result.rows.map(r => r.name).join(', ')}`);
             } else {
                 // Fallback: Check if it's the dashboard origin explicitly if not found in DB
-                if (origin === 'http://localhost:5173' || origin === 'http://localhost:5174') {
+                if (origin === 'http://localhost:5173') {
                     isAllowed = true;
                     console.log(`[ProjectCORS] Allowed via hardcoded dashboard fallback`);
                 }

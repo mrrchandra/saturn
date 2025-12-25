@@ -7,7 +7,7 @@ import TestResults from './components/TestResults';
 
 function App() {
   const [apiUrl, setApiUrl] = useState(import.meta.env.VITE_API_URL || 'http://localhost:5000');
-  const [apiKey, setApiKey] = useState(import.meta.env.VITE_API_KEY || 'saturn-dashboard-key-2024');
+  const [apiKey, setApiKey] = useState(import.meta.env.VITE_API_KEY || 'sat_live_24b0d91e4016622fa5923f0031764f26e6fe66fe235a06c1');
   const [testResults, setTestResults] = useState([]);
 
   const logResult = (functionName, success, response) => {
