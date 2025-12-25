@@ -1,15 +1,27 @@
+```javascript
 const jwt = require('jsonwebtoken');
+const { error } = require('../utils/response');
 
-exports.verifyToken = (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Access denied, no token provided' });
+const verifyToken = (req, res, next) => {
+    // Check cookies first (new cookie-based auth)
+    let token = req.cookies?.saturn_access;
+    
+    // Fallback to Authorization header (backward compatibility)
+    if (!token) {
+        const authHeader = req.headers['authorization'];
+        token = authHeader && authHeader.split(' ')[1];
+    }
+
+    if (!token) {
+        return error(res, 'Authentication required', 'No token provided', 401);
+    }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
+        req.user = { id: decoded.userId, role: decoded.role };
         next();
     } catch (err) {
-        res.status(400).json({ error: 'Invalid token' });
+        return error(res, 'Invalid token', 'Token verification failed', 403);
     }
 };
 
