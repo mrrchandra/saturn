@@ -1,11 +1,10 @@
-```javascript
 const jwt = require('jsonwebtoken');
 const { error } = require('../utils/response');
 
 const verifyToken = (req, res, next) => {
     // Check cookies first (new cookie-based auth)
     let token = req.cookies?.saturn_access;
-    
+
     // Fallback to Authorization header (backward compatibility)
     if (!token) {
         const authHeader = req.headers['authorization'];
@@ -25,10 +24,12 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-exports.isAdmin = (req, res, next) => {
+const isAdmin = (req, res, next) => {
     if (req.user && req.user.role === 'admin') {
         next();
     } else {
         res.status(403).json({ error: 'Access denied: Admin role required' });
     }
 };
+
+module.exports = { verifyToken, isAdmin };
