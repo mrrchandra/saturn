@@ -31,6 +31,11 @@ function OriginManagementModal({ project, isOpen, onClose }) {
 
         // Basic URL validation or normalization
         let formatted = newOrigin.trim().toLowerCase();
+        // Remove trailing slash if present
+        if (formatted.endsWith('/')) {
+            formatted = formatted.slice(0, -1);
+        }
+
         if (formatted && !formatted.startsWith('http')) {
             formatted = `https://${formatted}`;
         }

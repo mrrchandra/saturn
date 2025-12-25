@@ -1,7 +1,7 @@
 const db = require('../config/db');
 
 const projectCors = async (req, res, next) => {
-    const origin = req.headers.origin;
+    const origin = req.headers.origin?.replace(/\/$/, '') || '';
 
     // Allow non-browser requests (SDK, server-to-server)
     if (!origin) {
@@ -20,7 +20,7 @@ const projectCors = async (req, res, next) => {
 
     // Case 1: Project already identified (API key provided in headers)
     if (req.project) {
-        allowedOrigins = req.project.config?.allowed_origins || [];
+        allowedOrigins = (req.project.config?.allowed_origins || []).map(o => o.replace(/\/$/, ''));
         isAllowed = allowedOrigins.includes(origin);
         console.log(`[ProjectCORS] Context Project: ${req.project.name}, Allowed: ${isAllowed}`);
     }
@@ -31,13 +31,14 @@ const projectCors = async (req, res, next) => {
     // b) No project was identified yet (req.project is null)
     if (!isAllowed && (req.method === 'OPTIONS' || !req.project)) {
         try {
-            // Check if ANY project whitelists this origin
-            // Search anywhere in the Projects table for this origin in config->allowed_origins
+            // Check if ANY project whitelists this origin (fuzzy match allowed origins)
+            // Note: Postgres @> check for exact JSONB matching. We'll check exact and then fallback.
             const result = await db.query(`
                 SELECT name, config 
                 FROM Projects 
                 WHERE config->'allowed_origins' @> $1::jsonb
-            `, [JSON.stringify([origin])]);
+                   OR config->'allowed_origins' @> $2::jsonb
+            `, [JSON.stringify([origin]), JSON.stringify([origin + '/'])]);
 
             if (result.rows.length > 0) {
                 isAllowed = true;
