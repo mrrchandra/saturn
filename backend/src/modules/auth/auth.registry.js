@@ -42,6 +42,18 @@ module.exports = {
             handler: 'authController.uploadPFP',
             requiresAuth: true,
             rateLimitTier: 'medium'
+        },
+        'auth.session': {
+            description: 'Check current user session',
+            handler: 'sessionController.session',
+            requiresAuth: false,
+            rateLimitTier: 'low'
+        },
+        'auth.me': {
+            description: 'Get current user information (alias for session)',
+            handler: 'sessionController.session',
+            requiresAuth: false,
+            rateLimitTier: 'low'
         }
     }
 };

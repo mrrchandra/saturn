@@ -58,6 +58,7 @@ router.post('/login',
 
 // Session check
 router.get('/session', sessionController.session);
+router.get('/me', sessionController.session);
 
 router.post('/refresh', functionGate('auth.refresh'), authController.refresh);
 router.post('/logout', verifyToken, functionGate('auth.logout'), authController.logout);

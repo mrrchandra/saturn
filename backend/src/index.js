@@ -29,11 +29,11 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./modules/auth/auth.routes'));
 app.use('/api/user', require('./modules/user/user.routes'));
 app.use('/api/otp', require('./modules/otp/otp.routes'));
-app.use('/api/analytics', require('./routes/analytics'));
-app.use('/api/admin', require('./routes/admin'));
-app.use('/api/notify', require('./routes/notify'));
-app.use('/api/integrations', require('./routes/integrations'));
-app.use('/api', require('./routes/api'));
+app.use('/api/analytics', require('./modules/analytics/analytics.routes'));
+app.use('/api/admin', require('./modules/admin/admin.routes'));
+app.use('/api/notify', require('./modules/notify/notify.routes'));
+app.use('/api/integrations', require('./modules/integrations/integrations.routes'));
+app.use('/api', require('./modules/system/system.routes'));
 
 // 404 Handler
 app.use((req, res) => {

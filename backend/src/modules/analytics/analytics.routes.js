@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
-const analyticsController = require('../controllers/analyticsController');
-
-const { verifyToken, isAdmin } = require('../middleware/auth');
+const analyticsController = require('./analytics.controller');
+const { verifyToken, isAdmin } = require('../../core/middleware/auth');
 
 // Rate limiter for analytics endpoints
 const analyticsLimiter = rateLimit({
@@ -12,7 +11,10 @@ const analyticsLimiter = rateLimit({
     message: { success: false, message: 'Too many analytics requests, please try again later.' }
 });
 
-router.get('/auth-attempts', analyticsLimiter, verifyToken, isAdmin, analyticsController.getAuthAttempts);
-router.get('/users-registered', analyticsLimiter, verifyToken, isAdmin, analyticsController.getUsersRegistered);
+router.use(verifyToken);
+router.use(isAdmin);
+
+router.get('/auth-attempts', analyticsLimiter, analyticsController.getAuthAttempts);
+router.get('/users-registered', analyticsLimiter, analyticsController.getUsersRegistered);
 
 module.exports = router;

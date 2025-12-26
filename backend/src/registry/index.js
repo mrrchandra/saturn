@@ -4,12 +4,22 @@ const db = require('../core/db');
 const authRegistry = require('../modules/auth/auth.registry');
 const userRegistry = require('../modules/user/user.registry');
 const otpRegistry = require('../modules/otp/otp.registry');
+const adminRegistry = require('../modules/admin/admin.registry');
+const analyticsRegistry = require('../modules/analytics/analytics.registry');
+const integrationsRegistry = require('../modules/integrations/integrations.registry');
+const notifyRegistry = require('../modules/notify/notify.registry');
+const systemRegistry = require('../modules/system/system.registry');
 
 // Aggregate all functions
 const FUNCTION_REGISTRY = {
     ...authRegistry.functions,
     ...userRegistry.functions,
-    ...otpRegistry.functions
+    ...otpRegistry.functions,
+    ...adminRegistry.functions,
+    ...analyticsRegistry.functions,
+    ...integrationsRegistry.functions,
+    ...notifyRegistry.functions,
+    ...systemRegistry.functions
 };
 
 /**
@@ -46,7 +56,7 @@ const syncRegistryToDatabase = async () => {
 };
 
 // Rebuild Registry with Domain Injection
-const modules = [authRegistry, userRegistry, otpRegistry];
+const modules = [authRegistry, userRegistry, otpRegistry, adminRegistry, analyticsRegistry, integrationsRegistry, notifyRegistry, systemRegistry];
 const AGGREGATED_REGISTRY = {};
 
 modules.forEach(mod => {

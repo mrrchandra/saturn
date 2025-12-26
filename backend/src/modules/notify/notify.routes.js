@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
-const notifyController = require('../controllers/notifyController');
+const notifyController = require('./notify.controller');
 
 // Strict rate limiter for notifications to prevent spam
 const notifyLimiter = rateLimit({

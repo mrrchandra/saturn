@@ -24,10 +24,12 @@ export const AuthProvider = ({ children }) => {
         initAuth();
     }, []);
 
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
     const checkSession = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/auth/session');
-            if (res.data.authenticated) {
+            const res = await axios.get(`${API_BASE_URL}/api/auth/me`);
+            if (res.data.success && res.data.data.authenticated) {
                 setUser(res.data.data.user);
             }
         } catch (error) {
@@ -40,7 +42,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+            const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
             const { user } = res.data.data;
 
             setUser(user);
@@ -55,7 +57,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (name, email, password, username) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/register', {
+            const res = await axios.post(`${API_BASE_URL}/api/auth/register`, {
                 email,
                 username,
                 password,
@@ -71,7 +73,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await axios.post('http://localhost:5000/api/auth/logout');
+            await axios.post(`${API_BASE_URL}/api/auth/logout`);
             setUser(null);
         } catch (error) {
             console.error('Logout error:', error);
@@ -87,7 +89,7 @@ export const AuthProvider = ({ children }) => {
 
     const forgotPassword = async (email) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
+            const res = await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, { email });
             return { success: true, data: res.data.data };
         } catch (err) {
             return { success: false, error: err.response?.data?.message || 'Failed to send reset email' };
@@ -96,7 +98,7 @@ export const AuthProvider = ({ children }) => {
 
     const resetPassword = async (email, otp, newPassword) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/reset-password', {
+            const res = await axios.post(`${API_BASE_URL}/api/auth/reset-password`, {
                 email,
                 otp,
                 newPassword
