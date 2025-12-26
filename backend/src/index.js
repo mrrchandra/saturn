@@ -33,11 +33,11 @@ app.set('trust proxy', 1);
 app.use(express.json());
 app.use(cookieParser());
 
-// Project Context Middleware (Phase 1 - Control Plane)
-app.use(projectContext);
-
 // Per-Project CORS (Phase 1.5 - Security)
 app.use(projectCors);
+
+// Project Context Middleware (Phase 1 - Control Plane)
+app.use(projectContext);
 
 // Basic Route
 app.get('/', (req, res) => {
