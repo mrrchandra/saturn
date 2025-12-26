@@ -3,6 +3,8 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Users as UsersIcon, Search, MoreVertical, Trash2, Edit, Terminal, UserMinus, Shield } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -10,7 +12,7 @@ const Users = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/admin/users');
+                const res = await axios.get(`${API_BASE_URL}/api/admin/users`);
                 // FIX: Access res.data.data
                 setUsers(res.data.data);
             } catch (error) {
@@ -25,12 +27,13 @@ const Users = () => {
     const deleteUser = async (id) => {
         if (!window.confirm('EXECUTE_DELETION: This user record will be permanently purged.')) return;
         try {
-            await axios.delete(`http://localhost:5000/api/admin/user/${id}`);
+            await axios.delete(`${API_BASE_URL}/api/admin/user/${id}`);
             setUsers(users.filter(u => u.id !== id));
         } catch (error) {
             alert('Failed to delete user');
         }
     };
+
 
     return (
         <div className="space-y-6 pb-12 font-mono">

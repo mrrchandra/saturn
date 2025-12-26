@@ -3,12 +3,15 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Camera, Save, User as UserIcon, Terminal } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Profile = () => {
     const { user, updateUser } = useAuth();
     const [file, setFile] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [message, setMessage] = useState('');
     const fileInputRef = useRef(null);
+
 
     const handleFileChange = (e) => {
         if (e.target.files[0]) {
@@ -26,7 +29,7 @@ const Profile = () => {
         formData.append('user_id', user.id);
 
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/pfp', formData);
+            const res = await axios.post(`${API_BASE_URL}/api/auth/pfp`, formData);
             if (res.data.success) {
                 setMessage('AVATAR_UPDATE_SUCCESS');
                 updateUser({ ...user, avatar_url: res.data.data.avatar_url });

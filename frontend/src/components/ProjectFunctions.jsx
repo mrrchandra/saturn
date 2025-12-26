@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ChevronDown, ChevronRight, ToggleLeft, ToggleRight } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 function ProjectFunctions({ project }) {
     const [functions, setFunctions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expanded, setExpanded] = useState(false);
+
 
     useEffect(() => {
         if (expanded) {
@@ -15,7 +18,7 @@ function ProjectFunctions({ project }) {
 
     const fetchFunctions = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/admin/projects/${project.id}/functions`);
+            const res = await axios.get(`${API_BASE_URL}/api/admin/projects/${project.id}/functions`);
             setFunctions(res.data.data);
         } catch (error) {
             console.error('Error fetching functions:', error);
@@ -32,7 +35,7 @@ function ProjectFunctions({ project }) {
             });
 
             const res = await axios.patch(
-                `http://localhost:5000/api/admin/projects/${project.id}/functions/${functionId}`,
+                `${API_BASE_URL}/api/admin/projects/${project.id}/functions/${functionId}`,
                 { is_enabled: !currentStatus }
             );
 

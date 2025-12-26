@@ -3,6 +3,8 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Terminal, Key, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const ResetPassword = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -26,7 +28,7 @@ const ResetPassword = () => {
         setMessage('');
 
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/reset-password', {
+            const res = await axios.post(`${API_BASE_URL}/api/auth/reset-password`, {
                 email,
                 otp,
                 newPassword

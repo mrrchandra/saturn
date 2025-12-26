@@ -3,6 +3,8 @@ import axios from 'axios';
 import { BarChart3, Activity, ShieldCheck, UserPlus, Filter, Search, Terminal } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Analytics = () => {
     const [authAttempts, setAuthAttempts] = useState([]);
     const [registrations, setRegistrations] = useState([]);
@@ -15,10 +17,11 @@ const Analytics = () => {
         const fetchData = async () => {
             try {
                 const [authRes, regRes, projRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/analytics/auth-attempts'),
-                    axios.get('http://localhost:5000/api/analytics/users-registered'),
-                    axios.get('http://localhost:5000/api/integrations')
+                    axios.get(`${API_BASE_URL}/api/analytics/auth-attempts`),
+                    axios.get(`${API_BASE_URL}/api/analytics/users-registered`),
+                    axios.get(`${API_BASE_URL}/api/integrations`)
                 ]);
+
                 setAuthAttempts(authRes.data.data);
                 setRegistrations(regRes.data.data);
                 setProjects(projRes.data.data);

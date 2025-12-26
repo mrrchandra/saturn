@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { X, Search, ToggleLeft, ToggleRight, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 function FunctionRegistryModal({ project, isOpen, onClose }) {
     const [functions, setFunctions] = useState([]);
     const [search, setSearch] = useState('');
@@ -28,7 +30,7 @@ function FunctionRegistryModal({ project, isOpen, onClose }) {
     const fetchFunctions = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`http://localhost:5000/api/admin/projects/${project.id}/functions`);
+            const res = await axios.get(`${API_BASE_URL}/api/admin/projects/${project.id}/functions`);
             setFunctions(res.data.data || []);
         } catch (error) {
             console.error('Error fetching functions:', error);
@@ -41,7 +43,7 @@ function FunctionRegistryModal({ project, isOpen, onClose }) {
         setToggling(functionId);
         try {
             await axios.patch(
-                `http://localhost:5000/api/admin/projects/${project.id}/functions/${functionId}`,
+                `${API_BASE_URL}/api/admin/projects/${project.id}/functions/${functionId}`,
                 { is_enabled: !currentStatus }
             );
             await fetchFunctions();

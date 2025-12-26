@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Globe, Loader2, Link as LinkIcon } from 'lucide-react';
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 function OriginManagementModal({ project, isOpen, onClose }) {
     const [origins, setOrigins] = useState([]);
     const [newOrigin, setNewOrigin] = useState('');
@@ -53,7 +55,7 @@ function OriginManagementModal({ project, isOpen, onClose }) {
     const saveOrigins = async () => {
         setSaving(true);
         try {
-            await axios.put(`http://localhost:5000/api/admin/projects/${project.id}/origins`, {
+            await axios.put(`${API_BASE_URL}/api/admin/projects/${project.id}/origins`, {
                 origins
             });
             // Update local state if needed or show success

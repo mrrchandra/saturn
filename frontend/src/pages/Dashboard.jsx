@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { Activity, Terminal, ArrowUpRight, Search, Bell } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Dashboard = () => {
     const [stats, setStats] = useState([]);
     const [activity, setActivity] = useState([]);
@@ -15,10 +17,11 @@ const Dashboard = () => {
         const fetchData = async () => {
             try {
                 const [statsRes, activityRes, growthRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/stats'),
-                    axios.get('http://localhost:5000/api/recent-activity'),
-                    axios.get('http://localhost:5000/api/analytics/users-registered')
+                    axios.get(`${API_BASE_URL}/api/stats`),
+                    axios.get(`${API_BASE_URL}/api/recent-activity`),
+                    axios.get(`${API_BASE_URL}/api/analytics/users-registered`)
                 ]);
+
                 setStats(statsRes.data.data);
                 setActivity(activityRes.data.data);
 

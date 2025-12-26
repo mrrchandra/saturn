@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Save, Shield, Globe, Database, ToggleLeft, ToggleRight, Settings as SettingsIcon } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Settings = () => {
     const [settings, setSettings] = useState({
         site_name: 'Saturn Platform',
@@ -12,10 +14,11 @@ const Settings = () => {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
 
+
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/admin/site-settings');
+                const res = await axios.get(`${API_BASE_URL}/api/admin/site-settings`);
                 if (res.data.success && res.data.data.settings) {
                     setSettings(res.data.data.settings);
                 }
@@ -31,7 +34,7 @@ const Settings = () => {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await axios.patch('http://localhost:5000/api/admin/site-settings', settings);
+            await axios.patch(`${API_BASE_URL}/api/admin/site-settings`, settings);
             setMessage('CONFIGURATION_UPDATED');
             setTimeout(() => setMessage(''), 3000);
         } catch (error) {
