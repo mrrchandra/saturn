@@ -24,13 +24,13 @@ exports.login = asyncHandler(async (req, res) => {
         // Set cookies
         res.cookie('saturn_access', accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true, // Required for sameSite: 'none'
+            sameSite: 'none',
             maxAge: 15 * 60 * 1000
         }).cookie('saturn_refresh', refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
+            secure: true, // Required for sameSite: 'none'
+            sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 

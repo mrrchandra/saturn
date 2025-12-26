@@ -11,9 +11,11 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const initAuth = async () => {
-            // Set API key for all requests
-            const apiKey = import.meta.env.VITE_API_KEY || 'saturn-dashboard-key-2024';
-            axios.defaults.headers.common['x-api-key'] = apiKey;
+            // Set API key for all requests from env
+            const apiKey = import.meta.env.VITE_API_KEY;
+            if (apiKey) {
+                axios.defaults.headers.common['x-api-key'] = apiKey;
+            }
 
             // Enable sending cookies with requests
             axios.defaults.withCredentials = true;
