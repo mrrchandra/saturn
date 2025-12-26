@@ -22,39 +22,6 @@ const FUNCTION_REGISTRY = {
     ...systemRegistry.functions
 };
 
-/**
- * Sync registry to database
- */
-const syncRegistryToDatabase = async () => {
-    console.log('🔄 Syncing function registry to database...');
-
-    for (const [functionName, config] of Object.entries(FUNCTION_REGISTRY)) {
-        try {
-            // Determine domain from config or fallback (though config has it implicitly via structure, 
-            // the object structure in registry files is: { domain: '...', functions: { 'name': { ... } } }
-            // Wait, in my aggregation above `...authRegistry.functions`:
-            // `authRegistry.functions` is `{ 'auth.login': { ... } }`.
-            // The individual function config inside `auth.registry.js` DOES NOT have `domain` property inside the function object!
-            // It was `module.exports = { domain: 'auth', functions: { ... } }`.
-            // Inside `functions`, the objects have `description`, `handler`, etc. but NOT `domain`.
-            // The Main Registry had `domain: 'auth'` inside each entry.
-            // I need to inject the domain during aggregation or update the sub-registries.
-            // Aggregation injection is cleaner.
-
-            // Let's refactor the aggregation loops slightly or use the sub variables.
-            // BUT for this specific file write, I can just map them before spreading?
-            // Or handle it in the Sync function?
-            // `FUNCTION_REGISTRY` is used by `getFunctionConfig` lookup. Usually domain isn't needed for lookup.
-            // But `syncRegistryToDatabase` NEEDS `domain` for the INSERT statement.
-            // `getFunctionsByDomain` NEEDS `domain` property.
-
-            // Re-Strategy: Build the registry properly with domain injection.
-        } catch (error) {
-            console.error(`  ✗ ${functionName}:`, error.message);
-        }
-    }
-};
-
 // Rebuild Registry with Domain Injection
 const modules = [authRegistry, userRegistry, otpRegistry, adminRegistry, analyticsRegistry, integrationsRegistry, notifyRegistry, systemRegistry];
 const AGGREGATED_REGISTRY = {};

@@ -5,11 +5,30 @@ const errorHandler = require('./middleware/error');
 const projectContext = require('./middleware/projectContext');
 const projectCors = require('./middleware/projectCors');
 
+const { syncRegistryToDatabase } = require('./registry');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Initialize System
+const startServer = async () => {
+    try {
+        await syncRegistryToDatabase();
+
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('Critical failure during startup:', error);
+        process.exit(1);
+    }
+};
+
+startServer();
+
 // Trust proxy - required for rate limiting behind proxies
 app.set('trust proxy', 1);
+
 
 app.use(express.json());
 app.use(cookieParser());
@@ -43,6 +62,3 @@ app.use((req, res) => {
 // Global Error Handler (MUST BE LAST)
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
