@@ -1,8 +1,8 @@
-const db = require('../config/db');
+const db = require('../../core/db');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { success, error } = require('../utils/response');
-const asyncHandler = require('../utils/asyncHandler');
+const { success, error } = require('../../core/utils/response');
+const asyncHandler = require('../../core/utils/asyncHandler');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET;
@@ -10,7 +10,7 @@ const JWT_REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET;
 /**
  * Check session - validate access token from cookie
  */
-exports.session = asyncHandler(async (req, res) => {
+const session = asyncHandler(async (req, res) => {
     const accessToken = req.cookies.saturn_access;
 
     if (!accessToken) {
@@ -120,4 +120,4 @@ const handleSilentRefresh = async (req, res) => {
     }
 };
 
-module.exports = { session: exports.session };
+module.exports = { session };

@@ -1,106 +1,15 @@
-const db = require('../config/db');
+const db = require('../core/db');
 
-/**
- * Function Registry - Single source of truth
- * Maps public API names to internal handlers
- */
+// Import Module Registries
+const authRegistry = require('../modules/auth/auth.registry');
+const userRegistry = require('../modules/user/user.registry');
+const otpRegistry = require('../modules/otp/otp.registry');
+
+// Aggregate all functions
 const FUNCTION_REGISTRY = {
-    // Auth domain
-    'auth.login': {
-        domain: 'auth',
-        description: 'User login with email/password',
-        handler: 'authController.login',
-        requiresAuth: false,
-        rateLimitTier: 'medium'
-    },
-    'auth.register': {
-        domain: 'auth',
-        description: 'Register new user account',
-        handler: 'authController.register',
-        requiresAuth: false,
-        rateLimitTier: 'medium'
-    },
-    'auth.logout': {
-        domain: 'auth',
-        description: 'Logout current user',
-        handler: 'authController.logout',
-        requiresAuth: true,
-        rateLimitTier: 'low'
-    },
-    'auth.refresh': {
-        domain: 'auth',
-        description: 'Refresh access token',
-        handler: 'authController.refresh',
-        requiresAuth: false,
-        rateLimitTier: 'medium'
-    },
-    'auth.forgot-password': {
-        domain: 'auth',
-        description: 'Request password reset OTP',
-        handler: 'authController.forgotPassword',
-        requiresAuth: false,
-        rateLimitTier: 'high'
-    },
-    'auth.reset-password': {
-        domain: 'auth',
-        description: 'Reset password with OTP',
-        handler: 'authController.resetPassword',
-        requiresAuth: false,
-        rateLimitTier: 'high'
-    },
-    'auth.upload-pfp': {
-        domain: 'auth',
-        description: 'Upload profile picture',
-        handler: 'authController.uploadPFP',
-        requiresAuth: true,
-        rateLimitTier: 'medium'
-    },
-
-    // OTP domain
-    'otp.send': {
-        domain: 'otp',
-        description: 'Send OTP for email verification',
-        handler: 'authController.sendOTP',
-        requiresAuth: false,
-        rateLimitTier: 'critical'
-    },
-    'otp.verify': {
-        domain: 'otp',
-        description: 'Verify OTP code',
-        handler: 'authController.verifyOTPCode',
-        requiresAuth: false,
-        rateLimitTier: 'high'
-    },
-
-    // User domain
-    'user.get': {
-        domain: 'user',
-        description: 'Get user information',
-        handler: 'userController.getUserInfo',
-        requiresAuth: false,
-        rateLimitTier: 'low'
-    },
-    'user.details': {
-        domain: 'user',
-        description: 'Get detailed user info',
-        handler: 'userController.getUserDetails',
-        requiresAuth: false,
-        rateLimitTier: 'low'
-    },
-    'user.avatar': {
-        domain: 'user',
-        description: 'Get user avatar',
-        handler: 'userController.getAvatar',
-        requiresAuth: false,
-        rateLimitTier: 'low'
-    },
-    'user.metadata': {
-        domain: 'user',
-        description: 'Get user metadata',
-        handler: 'userController.getMetadata',
-        requiresAuth: false,
-        rateLimitTier: 'low'
-    }
+    ...authRegistry.functions,
+    ...userRegistry.functions,
+    ...otpRegistry.functions
 };
 
 /**
@@ -110,6 +19,52 @@ const syncRegistryToDatabase = async () => {
     console.log('🔄 Syncing function registry to database...');
 
     for (const [functionName, config] of Object.entries(FUNCTION_REGISTRY)) {
+        try {
+            // Determine domain from config or fallback (though config has it implicitly via structure, 
+            // the object structure in registry files is: { domain: '...', functions: { 'name': { ... } } }
+            // Wait, in my aggregation above `...authRegistry.functions`:
+            // `authRegistry.functions` is `{ 'auth.login': { ... } }`.
+            // The individual function config inside `auth.registry.js` DOES NOT have `domain` property inside the function object!
+            // It was `module.exports = { domain: 'auth', functions: { ... } }`.
+            // Inside `functions`, the objects have `description`, `handler`, etc. but NOT `domain`.
+            // The Main Registry had `domain: 'auth'` inside each entry.
+            // I need to inject the domain during aggregation or update the sub-registries.
+            // Aggregation injection is cleaner.
+
+            // Let's refactor the aggregation loops slightly or use the sub variables.
+            // BUT for this specific file write, I can just map them before spreading?
+            // Or handle it in the Sync function?
+            // `FUNCTION_REGISTRY` is used by `getFunctionConfig` lookup. Usually domain isn't needed for lookup.
+            // But `syncRegistryToDatabase` NEEDS `domain` for the INSERT statement.
+            // `getFunctionsByDomain` NEEDS `domain` property.
+
+            // Re-Strategy: Build the registry properly with domain injection.
+        } catch (error) {
+            console.error(`  ✗ ${functionName}:`, error.message);
+        }
+    }
+};
+
+// Rebuild Registry with Domain Injection
+const modules = [authRegistry, userRegistry, otpRegistry];
+const AGGREGATED_REGISTRY = {};
+
+modules.forEach(mod => {
+    Object.entries(mod.functions).forEach(([funcName, funcConfig]) => {
+        AGGREGATED_REGISTRY[funcName] = {
+            ...funcConfig,
+            domain: mod.domain // Inject domain from module wrapper
+        };
+    });
+});
+
+// Export the aggregated one
+const FINAL_REGISTRY = AGGREGATED_REGISTRY;
+
+const syncRegistry = async () => {
+    console.log('🔄 Syncing function registry to database...');
+
+    for (const [functionName, config] of Object.entries(FINAL_REGISTRY)) {
         try {
             await db.query(`
                 INSERT INTO FunctionRegistry (domain, function_name, description, handler_path, requires_auth, rate_limit_tier)
@@ -143,14 +98,14 @@ const syncRegistryToDatabase = async () => {
  * Get function config by name
  */
 const getFunctionConfig = (functionName) => {
-    return FUNCTION_REGISTRY[functionName] || null;
+    return FINAL_REGISTRY[functionName] || null;
 };
 
 /**
  * Get all functions by domain
  */
 const getFunctionsByDomain = (domain) => {
-    return Object.entries(FUNCTION_REGISTRY)
+    return Object.entries(FINAL_REGISTRY)
         .filter(([_, config]) => config.domain === domain)
         .reduce((acc, [name, config]) => {
             acc[name] = config;
@@ -159,8 +114,8 @@ const getFunctionsByDomain = (domain) => {
 };
 
 module.exports = {
-    FUNCTION_REGISTRY,
-    syncRegistryToDatabase,
+    FUNCTION_REGISTRY: FINAL_REGISTRY,
+    syncRegistryToDatabase: syncRegistry,
     getFunctionConfig,
     getFunctionsByDomain
 };

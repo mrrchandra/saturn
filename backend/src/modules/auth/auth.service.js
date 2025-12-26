@@ -1,7 +1,7 @@
 const db = require('../../core/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { createOTP, verifyOTP } = require('../../core/utils/otpService');
+const otpService = require('../otp/otp.service');
 const { sendOTPEmail } = require('../../services/emailService');
 
 class AuthService {
@@ -90,26 +90,6 @@ class AuthService {
     async refreshToken(token) {
         if (!token) throw new Error('Refresh token required');
 
-        // Check DB (Assuming checking validity essentially)
-        // Note: The previous logic checked AuthTokens table but updated Users table? 
-        // Logic in original controller seemed slightly mixed (Users table had refresh_token column). 
-        // Original code checked 'AuthTokens' table for refresh token presence.
-        // Wait, the migration added `refresh_token` to `Users` table. 
-        // But `authController.refresh` checked `AuthTokens`.
-        // Let's look at `authController.refresh`:
-        // `SELECT * FROM AuthTokens WHERE token = $1 AND type = $2`
-        // THIS SEEMS LIKE A BUG in the original controller if we migrated to `Users` table.
-        // However, sticking to the refactor instructions: "Refactor".
-        // Use the Logic that was working (or intended).
-        // Since I see `UPDATE Users SET refresh_token` in login...
-        // The refresh logic should probably check `Users` table OR the `AuthTokens` if used as a blacklist/whitelist.
-        // The original `authController.refresh` checked `AuthTokens`.
-        // I will implement what was there, but it looks suspicious given the `Users` table update.
-        // Actually, let's fix it to match the Login flow which stores it in `Users`.
-        // Query `Users` table for the token match?
-        // Wait, the token is hashed in `Users`. We can't query by it directly.
-        // We'd need the userId from the jwt first.
-
         try {
             const payload = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
 
@@ -151,7 +131,7 @@ class AuthService {
      * Send OTP
      */
     async sendOTP(email) {
-        const otpResult = await createOTP(email, 'email_verification');
+        const otpResult = await otpService.createOTP(email, 'email_verification');
         if (!otpResult.success) throw new Error(otpResult.error);
 
         const emailResult = await sendOTPEmail(email, otpResult.otp);
@@ -164,7 +144,7 @@ class AuthService {
      * Verify OTP
      */
     async verifyOTP(email, otp) {
-        const result = await verifyOTP(email, otp, 'email_verification');
+        const result = await otpService.verifyOTP(email, otp, 'email_verification');
         if (!result.success) throw new Error(result.error);
         return { email, verified: true };
     }
@@ -177,7 +157,7 @@ class AuthService {
         if (result.rows.length === 0) throw new Error('User not found');
 
         const user = result.rows[0];
-        const otpResult = await createOTP(email, 'password_reset');
+        const otpResult = await otpService.createOTP(email, 'password_reset');
         if (!otpResult.success) throw new Error(otpResult.error);
 
         const emailResult = await sendOTPEmail(email, otpResult.otp, user.username);
@@ -190,7 +170,7 @@ class AuthService {
      * Reset Password
      */
     async resetPassword(email, otp, newPassword) {
-        const otpVerification = await verifyOTP(email, otp, 'password_reset');
+        const otpVerification = await otpService.verifyOTP(email, otp, 'password_reset');
         if (!otpVerification.success) throw new Error(otpVerification.error);
 
         const password_hash = await bcrypt.hash(newPassword, 10);
@@ -204,6 +184,7 @@ class AuthService {
 
         return { email };
     }
+
     /**
      * Upload Profile Picture via ImgLink
      */

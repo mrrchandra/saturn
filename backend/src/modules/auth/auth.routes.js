@@ -4,13 +4,8 @@ const multer = require('multer');
 const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const authController = require('./auth.controller');
-// sessionController logic needs to be potentially moved or imported. 
-// For now, I will import the OLD sessionController to avoid breaking unrelated parts, 
-// OR I should move session logic to Auth domain?
-// Session check (/session) effectively belongs to Auth or User. 
-// I'll keep it imported from the old location for now to minimize scope creep in Phase 1, 
-// but eventually it should be in `auth` module.
-const sessionController = require('../../controllers/sessionController');
+// sessionController logic moved to local module
+const sessionController = require('./session.controller');
 const { verifyToken } = require('../../core/middleware/auth');
 const { error } = require('../../core/utils/response');
 const functionGate = require('../../core/middleware/functionGate');

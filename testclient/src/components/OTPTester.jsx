@@ -12,11 +12,11 @@ function OTPTester({ apiUrl, apiKey, logResult }) {
 
         switch (func) {
             case 'otp.send':
-                endpoint = '/api/auth/send-otp';
+                endpoint = '/api/otp/send';
                 body = { email };
                 break;
             case 'otp.verify':
-                endpoint = '/api/auth/verify-otp';
+                endpoint = '/api/otp/verify';
                 body = { email, otp };
                 break;
         }

@@ -28,6 +28,7 @@ app.get('/', (req, res) => {
 // Modular Routes
 app.use('/api/auth', require('./modules/auth/auth.routes'));
 app.use('/api/user', require('./modules/user/user.routes'));
+app.use('/api/otp', require('./modules/otp/otp.routes'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/notify', require('./routes/notify'));
