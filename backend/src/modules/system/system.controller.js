@@ -16,4 +16,10 @@ exports.getStats = asyncHandler(async (req, res) => {
 exports.getRecentActivity = asyncHandler(async (req, res) => {
     const activity = await systemService.getRecentActivity();
     return success(res, activity);
+});/**
+ * Get function registry for documentation
+ */
+exports.getRegistry = asyncHandler(async (req, res) => {
+    const { FUNCTION_REGISTRY } = require('../../registry');
+    return success(res, FUNCTION_REGISTRY);
 });

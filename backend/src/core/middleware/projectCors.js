@@ -44,10 +44,11 @@ const projectCors = async (req, res, next) => {
                 isAllowed = true;
                 console.log(`[ProjectCORS] Origin recognized for project(s): ${result.rows.map(r => r.name).join(', ')}`);
             } else {
-                // Fallback: Check if it's the dashboard origin explicitly if not found in DB
-                if (origin === 'http://localhost:5173') {
+                // Fallback: Check if it's the dashboard explicitly if not found in DB
+                const devOrigins = ['http://localhost:5173'];
+                if (devOrigins.includes(origin)) {
                     isAllowed = true;
-                    console.log(`[ProjectCORS] Allowed via hardcoded dashboard fallback`);
+                    console.log(`[ProjectCORS] Allowed via hardcoded dev fallback: ${origin}`);
                 }
             }
         } catch (error) {
